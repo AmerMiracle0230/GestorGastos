@@ -1,6 +1,5 @@
-package com.example.gestorgastos.screens.pdf
+package com.example.gestorgastos.screens.vermas
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gestorgastos.data.entity.Categoria
@@ -9,14 +8,12 @@ import com.example.gestorgastos.data.entity.Ingreso
 import com.example.gestorgastos.data.repository.CategoriaRepository
 import com.example.gestorgastos.data.repository.GastoRepository
 import com.example.gestorgastos.data.repository.IngresoRepository
-import com.example.gestorgastos.utils.PdfGenerator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
-import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
-class PdfViewModel @Inject constructor(
+class VerMasViewModel @Inject constructor(
     private val gastoRepository: GastoRepository,
     private val ingresoRepository: IngresoRepository,
     private val categoriaRepository: CategoriaRepository
@@ -42,14 +39,4 @@ class PdfViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
             initialValue = emptyList()
         )
-
-    fun generarPDF(
-        context: Context,
-        gastos: List<Gasto>,
-        ingresos: List<Ingreso>,
-        categorias: List<Categoria>
-    ): File? {
-        val mapaCategorias = categorias.associateBy { it.id }
-        return PdfGenerator.generarInforme(context, gastos, ingresos, mapaCategorias)
-    }
 }

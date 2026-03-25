@@ -1,10 +1,11 @@
 package com.example.gestorgastos.di
 
-
 import android.content.Context
 import androidx.room.Room
+import com.example.gestorgastos.data.dao.CategoriaDao
 import com.example.gestorgastos.data.dao.GastoDao
-import com.example.gestorgastos.data.database.GastoDatabase
+import com.example.gestorgastos.data.dao.IngresoDao
+import com.example.gestorgastos.data.database.AppDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,21 +19,27 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideGastoDatabase(
+    fun provideAppDatabase(
         @ApplicationContext context: Context
-    ): GastoDatabase {
+    ): AppDatabase {
         return Room.databaseBuilder(
             context,
-            GastoDatabase::class.java,
-            "gastos_database"
-        ).build()
+            AppDatabase::class.java,
+            "ark_database"
+        )
+        .fallbackToDestructiveMigration() // 🆕 ESTO EVITA CRASHES AL CAMBIAR ENTIDADES
+        .build()
     }
 
     @Provides
     @Singleton
-    fun provideGastoDao(
-        database: GastoDatabase
-    ): GastoDao {
-        return database.gastoDao()
-    }
+    fun provideGastoDao(database: AppDatabase): GastoDao = database.gastoDao()
+
+    @Provides
+    @Singleton
+    fun provideIngresoDao(database: AppDatabase): IngresoDao = database.ingresoDao()
+
+    @Provides
+    @Singleton
+    fun provideCategoriaDao(database: AppDatabase): CategoriaDao = database.categoriaDao()
 }

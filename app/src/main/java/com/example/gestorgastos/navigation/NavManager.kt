@@ -15,6 +15,7 @@ import com.example.gestorgastos.screens.lista.ListaScreen
 import com.example.gestorgastos.screens.pdf.PdfScreen
 import com.example.gestorgastos.screens.splash.SplashScreen
 import com.example.gestorgastos.screens.stats.StatsScreen
+import com.example.gestorgastos.screens.vermas.VerMasScreen
 
 @Composable
 fun NavManager(
@@ -41,8 +42,17 @@ fun NavManager(
         composable("home") {
             HomeScreen(
                 onClose = {
-                    (context as? Activity)?.finish()  // ← Cierra la app
+                    (context as? Activity)?.finish()
+                },
+                onVerMasClick = {
+                    navController.navigate("vermas")
                 }
+            )
+        }
+
+        composable("vermas") {
+            VerMasScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
