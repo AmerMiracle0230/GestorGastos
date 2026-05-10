@@ -1,3 +1,7 @@
+// archivo: ConfigViewModel.kt
+// que hace: maneja la logica de la pantalla de configuracion
+// gestiona: moneda, tema, categorias destacadas, metas
+
 package com.example.gestorgastos.screens.config
 
 import androidx.lifecycle.ViewModel
@@ -23,6 +27,7 @@ class ConfigViewModel @Inject constructor(
             initialValue = "€"
         )
 
+    @Suppress("unused")
     val temaActual: StateFlow<String> = preferencias.tema
         .stateIn(
             scope = viewModelScope,
@@ -44,12 +49,14 @@ class ConfigViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    @Suppress("unused")
     fun guardarMoneda(moneda: String) {
         viewModelScope.launch {
             preferencias.guardarMoneda(moneda)
         }
     }
 
+    @Suppress("unused")
     fun guardarTema(tema: String) {
         viewModelScope.launch {
             preferencias.guardarTema(tema)
@@ -62,17 +69,6 @@ class ConfigViewModel @Inject constructor(
         }
     }
 
-    fun actualizarObjetivo(categoriaId: Int, nuevoObjetivo: Double) {
-        viewModelScope.launch {
-            val categoria = categoriaRepository.obtenerPorId(categoriaId)
-            categoria?.let {
-                val categoriaActualizada = it.copy(objetivo = nuevoObjetivo)
-                categoriaRepository.actualizar(categoriaActualizada)
-            }
-        }
-    }
-
-    // 🆕 Función para crear nueva categoría
     fun crearCategoria(nombre: String, icono: String, color: Int, tipo: String, objetivo: Double) {
         viewModelScope.launch {
             val nuevaCategoria = Categoria(
@@ -83,6 +79,39 @@ class ConfigViewModel @Inject constructor(
                 objetivo = objetivo
             )
             categoriaRepository.insertar(nuevaCategoria)
+        }
+    }
+
+    fun editarCategoria(categoria: Categoria, nombre: String, icono: String, color: Int, tipo: String, objetivo: Double) {
+        viewModelScope.launch {
+            val categoriaActualizada = categoria.copy(
+                nombre = nombre,
+                icono = icono,
+                color = color,
+                tipo = tipo,
+                objetivo = objetivo
+            )
+            categoriaRepository.actualizar(categoriaActualizada)
+        }
+    }
+
+    fun eliminarCategoria(categoria: Categoria) {
+        viewModelScope.launch {
+            categoriaRepository.eliminar(categoria)
+            val destacadas = categoriasDestacadasIds.value.toMutableSet()
+            if (destacadas.remove(categoria.id)) {
+                preferencias.guardarCategoriasDestacadas(destacadas)
+            }
+        }
+    }
+
+    fun actualizarObjetivo(categoriaId: Int, nuevoObjetivo: Double) {
+        viewModelScope.launch {
+            val categoria = categoriaRepository.obtenerPorId(categoriaId)
+            categoria?.let {
+                val categoriaActualizada = it.copy(objetivo = nuevoObjetivo)
+                categoriaRepository.actualizar(categoriaActualizada)
+            }
         }
     }
 }

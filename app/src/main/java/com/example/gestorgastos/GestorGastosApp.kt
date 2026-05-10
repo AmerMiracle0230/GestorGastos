@@ -1,3 +1,7 @@
+// archivo: GestorGastosApp.kt
+// que hace: aplicacion principal, se ejecuta al iniciar la app
+// funcion: inserta categorias por defecto en la base de datos la primera vez
+
 package com.example.gestorgastos
 
 import android.app.Application
@@ -19,7 +23,7 @@ class GestorGastosApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // Insertar categorías por defecto la primera vez
+        // si la base de datos esta vacia, insertar categorias por defecto
         CoroutineScope(Dispatchers.IO).launch {
             if (database.categoriaDao().obtenerTodas().first().isEmpty()) {
                 database.categoriaDao().insertarTodas(CategoriaInicial.categoriasPorDefecto)

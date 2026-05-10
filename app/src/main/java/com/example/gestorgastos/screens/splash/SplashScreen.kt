@@ -1,3 +1,7 @@
+// archivo: SplashScreen.kt
+// que hace: pantalla de carga inicial
+// muestra: logo y loader por 2 segundos, luego navega a home
+
 package com.example.gestorgastos.screens.splash
 
 import androidx.compose.foundation.layout.*

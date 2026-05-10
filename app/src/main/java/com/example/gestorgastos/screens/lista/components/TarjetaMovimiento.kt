@@ -1,8 +1,14 @@
+// archivo: TarjetaMovimiento.kt
+// que hace: tarjeta que muestra un movimiento individual (gasto o ingreso)
+// permite: swipe a la izquierda para eliminar
+// usado en: ListaScreen
+
 package com.example.gestorgastos.screens.lista.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,13 +32,13 @@ fun TarjetaMovimiento(
     movimiento: MovimientoUI,
     isDarkTheme: Boolean,
     esGasto: Boolean,
+    moneda: String,
     dateFormat: SimpleDateFormat,
     onDelete: () -> Unit
 ) {
-    // Configuración profesional del Swipe
+    val primaryColor = MaterialTheme.colorScheme.primary
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
-            // Solo elimina si el deslizamiento se ha completado hacia la izquierda (EndToStart)
             if (value == SwipeToDismissBoxValue.EndToStart) {
                 onDelete()
                 true
@@ -40,34 +46,36 @@ fun TarjetaMovimiento(
                 false
             }
         },
-        // Establecemos que el umbral sea exactamente el 50% del ancho
         positionalThreshold = { totalDistance -> totalDistance * 0.5f }
     )
 
-    val cardColor = if (isDarkTheme) Color(0xFF151B54) else Color.White
-    val textColor = if (isDarkTheme) Color.White else Color(0xFF1A1A2E)
-    val textSecondaryColor = if (isDarkTheme) Color(0xFFB0B0B0) else Color(0xFF666666)
-    val gastoColor = if (isDarkTheme) Color(0xFFFF6B6B) else Color(0xFFDC3545)
-    val ingresoColor = if (isDarkTheme) Color(0xFF4ADE80) else Color(0xFF28A745)
+    val textColor = if (isDarkTheme) Color.White else Color.Black
+    val textSecondaryColor = if (isDarkTheme) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.5f)
+    val gastoColor = MaterialTheme.colorScheme.error
+    val ingresoColor = Color(0xFF4CAF50)
+
+    val cardBackground = if (isDarkTheme) {
+        Color.Black.copy(alpha = 0.4f)
+    } else {
+        Color.White.copy(alpha = 0.6f)
+    }
 
     val iconBackground = if (esGasto)
-        if (isDarkTheme) Color(0xFFFF6B6B).copy(alpha = 0.15f) else Color(0xFFFFEBEE)
+        gastoColor.copy(alpha = 0.15f)
     else
-        if (isDarkTheme) Color(0xFF4ADE80).copy(alpha = 0.15f) else Color(0xFFE8F5E9)
+        ingresoColor.copy(alpha = 0.15f)
 
     SwipeToDismissBox(
         state = dismissState,
-        enableDismissFromStartToEnd = false, // Solo permitir borrar deslizando a la izquierda
+        enableDismissFromStartToEnd = false,
         backgroundContent = {
-            // El color se vuelve rojo intenso solo cuando se supera el 50% (threshold reached)
             val color by animateColorAsState(
                 when (dismissState.targetValue) {
-                    SwipeToDismissBoxValue.EndToStart -> Color(0xDDFA4D4D) // Rojo fuerte al pasar el 50%
-                    else -> Color(0xFFFDA39D).copy(alpha = 0.7f) // Rojo suave inicial
+                    SwipeToDismissBoxValue.EndToStart -> Color(0xFFFF8A8A)
+                    else -> Color.Transparent
                 }, label = "dismissColor"
             )
-            
-            // El icono crece solo cuando se supera el 50%
+
             val iconScale by animateFloatAsState(
                 if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) 1.3f else 1.0f,
                 label = "iconScale"
@@ -81,24 +89,32 @@ fun TarjetaMovimiento(
                     .background(color),
                 contentAlignment = Alignment.CenterEnd
             ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Borrar",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .padding(end = 32.dp)
-                        .scale(iconScale)
-                )
+                if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Borrar",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .padding(end = 32.dp)
+                            .scale(iconScale)
+                    )
+                }
             }
         }
     ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .border(
+                    width = 1.dp,
+                    color = primaryColor.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .clip(RoundedCornerShape(12.dp)),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = cardColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            colors = CardDefaults.cardColors(containerColor = cardBackground),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -120,9 +136,9 @@ fun TarjetaMovimiento(
                             Text(text = movimiento.categoriaIcono, fontSize = 22.sp)
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.width(16.dp))
-                    
+
                     Column {
                         Text(
                             text = movimiento.nombre,
@@ -156,9 +172,9 @@ fun TarjetaMovimiento(
                         }
                     }
                 }
-                
+
                 Text(
-                    text = "${if (esGasto) "-" else "+"}${String.format("%.2f", movimiento.cantidad)}€",
+                    text = "${if (esGasto) "-" else "+"}${String.format(Locale.getDefault(), "%.2f", movimiento.cantidad)}$moneda",
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 17.sp,
                     color = if (esGasto) gastoColor else ingresoColor

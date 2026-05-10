@@ -1,10 +1,17 @@
+// archivo: ListaScreen.kt
+// que hace: pantalla de lista de movimientos (gastos e ingresos)
+// permite: buscar, filtrar por tipo/categoria, eliminar con swipe, añadir nuevo
+// usado en: navegacion principal
+
 package com.example.gestorgastos.screens.lista
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,21 +32,24 @@ import java.util.*
 @Composable
 fun ListaScreen(
     viewModel: ListaViewModel = hiltViewModel(),
-    onBack: () -> Unit,
-    onAddClick: () -> Unit
+    onBack: () -> Unit,          // volver a pantalla anterior
+    onAddClick: () -> Unit,      // navegar a pantalla de añadir
+    isDarkTheme: Boolean         // tema oscuro o claro
 ) {
+    // datos desde el viewmodel
     val gastos by viewModel.gastos.collectAsState()
     val ingresos by viewModel.ingresos.collectAsState()
     val categorias by viewModel.categorias.collectAsState()
+    val moneda by viewModel.monedaActual.collectAsState()
     val mapaCategorias = categorias.associateBy { it.id }
 
-    val isDarkTheme = isSystemInDarkTheme()
+    // estado de filtros
     var textoBusqueda by remember { mutableStateOf("") }
-    var filtroSeleccionado by remember { mutableStateOf<Filtro>(Filtro.TODOS) }
+    var filtroSeleccionado by remember { mutableStateOf<Filtro>(Filtro.Todos) }
 
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
-    // Combinar movimientos
+    // combinar todos los movimientos (gastos + ingresos) ordenados por fecha
     val todosMovimientos = remember(gastos, ingresos) {
         val lista = mutableListOf<Pair<String, Any>>()
         gastos.forEach { lista.add("gasto" to it) }
@@ -53,7 +63,7 @@ fun ListaScreen(
         }
     }
 
-    // Convertir a UI (incluyendo ID)
+    // convertir a modelo UI
     val movimientosUI = remember(todosMovimientos, mapaCategorias) {
         todosMovimientos.map { (tipo, movimiento) ->
             val id = if (tipo == "gasto") (movimiento as Gasto).id else (movimiento as Ingreso).id
@@ -68,7 +78,7 @@ fun ListaScreen(
                 tipo = tipo,
                 nombre = nombre,
                 cantidad = cantidad,
-                categoria = categoria?.nombre ?: "Sin categoría",
+                categoria = categoria?.nombre ?: "Sin categoria",
                 categoriaIcono = categoria?.icono ?: "📦",
                 fecha = fecha,
                 detalle = detalle
@@ -76,22 +86,23 @@ fun ListaScreen(
         }
     }
 
+    // calculos de totales
     val totalGastos = gastos.sumOf { it.cantidad }
     val totalIngresos = ingresos.sumOf { it.cantidad }
     val saldo = totalIngresos - totalGastos
 
-    // Filtrar
+    // aplicar filtros (busqueda y tipo/categoria)
     val movimientosFiltrados = movimientosUI.filter { movimiento ->
         val matchesBusqueda = textoBusqueda.isEmpty() ||
                 movimiento.nombre.contains(textoBusqueda, ignoreCase = true) ||
                 movimiento.categoria.contains(textoBusqueda, ignoreCase = true)
 
         val matchesFiltro = when (val current = filtroSeleccionado) {
-            is Filtro.TODOS -> true
-            is Filtro.SOLO_GASTOS -> movimiento.tipo == "gasto"
-            is Filtro.SOLO_INGRESOS -> movimiento.tipo == "ingreso"
-            is Filtro.CATEGORIA_GASTO -> movimiento.tipo == "gasto" && movimiento.categoria == current.nombre
-            is Filtro.CATEGORIA_INGRESO -> movimiento.tipo == "ingreso" && movimiento.categoria == current.nombre
+            is Filtro.Todos -> true
+            is Filtro.SoloGastos -> movimiento.tipo == "gasto"
+            is Filtro.SoloIngresos -> movimiento.tipo == "ingreso"
+            is Filtro.CategoriaGasto -> movimiento.tipo == "gasto" && movimiento.categoria == current.nombre
+            is Filtro.CategoriaIngreso -> movimiento.tipo == "ingreso" && movimiento.categoria == current.nombre
         }
         matchesBusqueda && matchesFiltro
     }
@@ -99,6 +110,7 @@ fun ListaScreen(
     val gastosFiltrados = movimientosFiltrados.filter { it.tipo == "gasto" }
     val ingresosFiltrados = movimientosFiltrados.filter { it.tipo == "ingreso" }
 
+    // categorias disponibles para filtros
     val categoriasGastos = movimientosUI.filter { it.tipo == "gasto" }.map { it.categoria }.distinct()
     val categoriasIngresos = movimientosUI.filter { it.tipo == "ingreso" }.map { it.categoria }.distinct()
 
@@ -108,9 +120,20 @@ fun ListaScreen(
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = onAddClick,
-                    containerColor = if (isDarkTheme) Color(0xFF29B6F6) else Color(0xFFF57C00)
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White,
+                    elevation = FloatingActionButtonDefaults.elevation(
+                        defaultElevation = 8.dp,
+                        pressedElevation = 12.dp
+                    ),
+                    shape = CircleShape,
+                    modifier = Modifier.size(56.dp)
                 ) {
-                    Text("➕", fontSize = 24.sp)
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Anadir movimiento",
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
             }
         ) { innerPadding ->
@@ -123,10 +146,9 @@ fun ListaScreen(
                         start = 16.dp,
                         end = 16.dp
                     )
-            ){
+            ) {
                 TituloGradienteConFlecha(
                     texto = "MOVIMIENTOS",
-                    isDarkTheme = isDarkTheme,
                     onBackClick = onBack
                 )
 
@@ -136,7 +158,8 @@ fun ListaScreen(
                     totalGastos = totalGastos,
                     totalIngresos = totalIngresos,
                     saldo = saldo,
-                    isDarkTheme = isDarkTheme
+                    isDarkTheme = isDarkTheme,
+                    moneda = moneda
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -154,8 +177,8 @@ fun ListaScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 LazyColumn {
-                    // SECCIÓN GASTOS
-                    if (gastosFiltrados.isNotEmpty() && (filtroSeleccionado == Filtro.TODOS || filtroSeleccionado == Filtro.SOLO_GASTOS || filtroSeleccionado is Filtro.CATEGORIA_GASTO)) {
+                    // seccion de gastos
+                    if (gastosFiltrados.isNotEmpty() && (filtroSeleccionado == Filtro.Todos || filtroSeleccionado == Filtro.SoloGastos || filtroSeleccionado is Filtro.CategoriaGasto)) {
                         item {
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -169,13 +192,14 @@ fun ListaScreen(
                         }
                         items(
                             items = gastosFiltrados,
-                            key = { it.tipo + it.id } // Usamos tipo + id para asegurar unicidad
+                            key = { it.tipo + it.id }
                         ) { movimiento ->
                             TarjetaMovimiento(
                                 movimiento = movimiento,
                                 isDarkTheme = isDarkTheme,
                                 esGasto = true,
                                 dateFormat = dateFormat,
+                                moneda = moneda,
                                 onDelete = {
                                     val gasto = gastos.find { it.id == movimiento.id }
                                     gasto?.let { viewModel.eliminarGasto(it) }
@@ -185,8 +209,8 @@ fun ListaScreen(
                         }
                     }
 
-                    // SECCIÓN INGRESOS
-                    if (ingresosFiltrados.isNotEmpty() && (filtroSeleccionado == Filtro.TODOS || filtroSeleccionado == Filtro.SOLO_INGRESOS || filtroSeleccionado is Filtro.CATEGORIA_INGRESO)) {
+                    // seccion de ingresos
+                    if (ingresosFiltrados.isNotEmpty() && (filtroSeleccionado == Filtro.Todos || filtroSeleccionado == Filtro.SoloIngresos || filtroSeleccionado is Filtro.CategoriaIngreso)) {
                         item {
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -200,13 +224,14 @@ fun ListaScreen(
                         }
                         items(
                             items = ingresosFiltrados,
-                            key = { it.tipo + it.id } // Usamos tipo + id
+                            key = { it.tipo + it.id }
                         ) { movimiento ->
                             TarjetaMovimiento(
                                 movimiento = movimiento,
                                 isDarkTheme = isDarkTheme,
                                 esGasto = false,
                                 dateFormat = dateFormat,
+                                moneda = moneda,
                                 onDelete = {
                                     val ingreso = ingresos.find { it.id == movimiento.id }
                                     ingreso?.let { viewModel.eliminarIngreso(it) }
@@ -216,6 +241,7 @@ fun ListaScreen(
                         }
                     }
 
+                    // mensaje si no hay movimientos
                     if (movimientosFiltrados.isEmpty()) {
                         item {
                             Box(

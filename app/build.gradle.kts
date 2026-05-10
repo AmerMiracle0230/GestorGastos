@@ -70,6 +70,8 @@ dependencies {
     // MPAndroidChart
     implementation(libs.mpandroidchart)
 
+
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -1,3 +1,6 @@
+// archivo: DatabaseModule.kt
+// que hace: provee la instancia de la base de datos y los DAO para Hilt
+
 package com.example.gestorgastos.di
 
 import android.content.Context
@@ -27,9 +30,13 @@ object DatabaseModule {
             AppDatabase::class.java,
             "ark_database"
         )
-        .fallbackToDestructiveMigration() // 🆕 ESTO EVITA CRASHES AL CAMBIAR ENTIDADES
-        .build()
+            .fallbackToDestructiveMigration()  // si cambia la version, borra y crea de nuevo
+            .build()
     }
+
+    @Provides
+    @Singleton
+    fun provideCategoriaDao(database: AppDatabase): CategoriaDao = database.categoriaDao()
 
     @Provides
     @Singleton
@@ -38,8 +45,4 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideIngresoDao(database: AppDatabase): IngresoDao = database.ingresoDao()
-
-    @Provides
-    @Singleton
-    fun provideCategoriaDao(database: AppDatabase): CategoriaDao = database.categoriaDao()
 }

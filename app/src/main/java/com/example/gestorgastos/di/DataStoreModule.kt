@@ -1,3 +1,6 @@
+// archivo: DataStoreModule.kt
+// que hace: provee la instancia de Preferencias para Hilt
+
 package com.example.gestorgastos.di
 
 import android.content.Context

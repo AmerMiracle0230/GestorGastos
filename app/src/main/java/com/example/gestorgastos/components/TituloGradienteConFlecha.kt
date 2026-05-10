@@ -1,66 +1,63 @@
+// archivo: TituloGradienteConFlecha.kt
+// que hace: título centrado con gradiente y flecha atras a la izquierda
+// usado en: ListaScreen, StatsScreen, PdfScreen, ConfigScreen
+
 package com.example.gestorgastos.components
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
 fun TituloGradienteConFlecha(
     texto: String,
-    isDarkTheme: Boolean,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val colores = if (isDarkTheme) listOf(
-        Color(0xFF0277BD),
-        Color(0xFF29B6F6),
-        Color(0xFF81D4FA)
-    ) else listOf(
-        Color(0xFFE65100),
-        Color(0xFFF57C00),
-        Color(0xFFFFB74D)
-    )
+    // color principal del tema
+    val primary = MaterialTheme.colorScheme.primary
+    val primaryVariant = primary.copy(alpha = 0.7f)
+    val primaryLight = primary.copy(alpha = 0.5f)
 
-    val shadowColor = if (isDarkTheme)
-        Color(0xFF29B6F6).copy(alpha = 0.6f)
-    else
-        Color(0xFFFFB74D).copy(alpha = 0.6f)
+    // colores para el gradiente
+    val colores = listOf(primary, primaryVariant, primaryLight)
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
-        // Flecha atrás
+    // sombra del texto
+    val shadowColor = primary.copy(alpha = 0.6f)
+
+    Box(modifier = modifier.fillMaxWidth()) {
+        // flecha atras a la izquierda
         IconButton(
             onClick = onBackClick,
             modifier = Modifier.align(Alignment.CenterStart)
         ) {
             Icon(
-                Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Atrás",
-                tint = if (isDarkTheme) Color.White else Color(0xFFE65100)
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Atras",
+                tint = primary
             )
         }
 
-        // Título centrado
+        // titulo centrado con gradiente
         Text(
             text = texto,
-            fontSize = 34.sp,
-            fontWeight = FontWeight.Black,
-            letterSpacing = 4.sp,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 2.sp,
             modifier = Modifier.align(Alignment.Center),
             style = TextStyle(
                 brush = Brush.linearGradient(colors = colores),

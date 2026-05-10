@@ -1,82 +1,166 @@
+// archivo: BarraInferior.kt
+// que hace: barra de navegacion inferior con 5 botones
+// botones: Lista, Stats, Inicio, PDF, Ajustes
+// el boton Inicio es más grande y destacado
+
 package com.example.gestorgastos.navigation.barraGlobal
 
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
-fun BarraInferior(navController: NavController) {
+fun BarraInferior(
+    navController: NavController,
+    isDarkTheme: Boolean
+) {
+    // ruta actual para saber qué icono está seleccionado
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
-    NavigationBar {
-        // LISTA (📋)
+    // colores según el tema
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val backgroundColor = if (isDarkTheme) {
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+    } else {
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+    }
+    val unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+
+    NavigationBar(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(112.dp)
+            .shadow(
+                elevation = 12.dp,
+                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+            ),
+        containerColor = backgroundColor,
+        tonalElevation = 0.dp
+    ) {
+        // boton lista
         NavigationBarItem(
-            icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Lista") },
-            label = { Text("Lista") },
+            icon = {
+                Icon(Icons.AutoMirrored.Filled.List, null, modifier = Modifier.size(26.dp))
+            },
+            label = {
+                Text("Lista", fontWeight = FontWeight.Medium, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp))
+            },
             selected = currentRoute == "lista",
             onClick = {
-                navController.navigate("lista") {
-                    launchSingleTop = true
-                    restoreState = true
+                if (currentRoute != "lista") {
+                    navController.navigate("lista") {
+                        popUpTo("home") { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = primaryColor,
+                selectedTextColor = primaryColor,
+                unselectedIconColor = unselectedColor,
+                unselectedTextColor = unselectedColor,
+                indicatorColor = primaryColor.copy(alpha = 0.12f)
+            )
         )
 
-        // ESTADÍSTICAS (📊)
+        // boton stats
         NavigationBarItem(
-            icon = { Icon(Icons.Default.BarChart, contentDescription = "Estadísticas") },
-            label = { Text("Stats") },
+            icon = { Icon(Icons.Default.BarChart, null, modifier = Modifier.size(26.dp)) },
+            label = { Text("Stats", fontWeight = FontWeight.Medium, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp)) },
             selected = currentRoute == "stats",
             onClick = {
-                navController.navigate("stats") {
-                    launchSingleTop = true
-                    restoreState = true
+                if (currentRoute != "stats") {
+                    navController.navigate("stats") {
+                        popUpTo("home") { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = primaryColor,
+                selectedTextColor = primaryColor,
+                unselectedIconColor = unselectedColor,
+                unselectedTextColor = unselectedColor,
+                indicatorColor = primaryColor.copy(alpha = 0.12f)
+            )
         )
 
-        // HOME (🏠)
+        // boton home (mas grande)
         NavigationBarItem(
-            icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
-            label = { Text("Inicio") },
+            icon = { Icon(Icons.Default.Home, null, modifier = Modifier.size(32.dp)) },
+            label = { Text("Inicio", fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp)) },
             selected = currentRoute == "home",
             onClick = {
-                // VUELVE A HOME AUNQUE YA ESTÉS ALLÍ
-                navController.popBackStack("home", false)
-            }
+                if (currentRoute != "home") {
+                    navController.popBackStack("home", false)
+                }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = primaryColor,
+                selectedTextColor = primaryColor,
+                unselectedIconColor = unselectedColor,
+                unselectedTextColor = unselectedColor,
+                indicatorColor = primaryColor.copy(alpha = 0.12f)
+            )
         )
 
-        // PDF (📄)
+        // boton PDF
         NavigationBarItem(
-            icon = { Icon(Icons.Default.PictureAsPdf, contentDescription = "PDF") },
-            label = { Text("PDF") },
+            icon = { Icon(Icons.Default.PictureAsPdf, null, modifier = Modifier.size(26.dp)) },
+            label = { Text("PDF", fontWeight = FontWeight.Medium, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp)) },
             selected = currentRoute == "pdf",
             onClick = {
-                navController.navigate("pdf") {
-                    launchSingleTop = true
-                    restoreState = true
+                if (currentRoute != "pdf") {
+                    navController.navigate("pdf") {
+                        popUpTo("home") { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = primaryColor,
+                selectedTextColor = primaryColor,
+                unselectedIconColor = unselectedColor,
+                unselectedTextColor = unselectedColor,
+                indicatorColor = primaryColor.copy(alpha = 0.12f)
+            )
         )
 
-        // CONFIGURACIÓN (⚙️)
+        // boton ajustes (config)
         NavigationBarItem(
-            icon = { Icon(Icons.Default.Settings, contentDescription = "Ajustes") },
-            label = { Text("Ajustes") },
+            icon = { Icon(Icons.Default.Settings, null, modifier = Modifier.size(26.dp)) },
+            label = { Text("Ajustes", fontWeight = FontWeight.Medium, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp)) },
             selected = currentRoute == "config",
             onClick = {
-                navController.navigate("config") {
-                    launchSingleTop = true
-                    restoreState = true
+                if (currentRoute != "config") {
+                    navController.navigate("config") {
+                        popUpTo("home") { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = primaryColor,
+                selectedTextColor = primaryColor,
+                unselectedIconColor = unselectedColor,
+                unselectedTextColor = unselectedColor,
+                indicatorColor = primaryColor.copy(alpha = 0.12f)
+            )
         )
     }
 }

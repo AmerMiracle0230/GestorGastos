@@ -1,3 +1,8 @@
+// archivo: FondoPantalla.kt
+// que hace: fondo con imagen y capa semitransparente
+// cambia la imagen y la opacidad según el tema (claro/oscuro)
+// usado en: todas las pantallas
+
 package com.example.gestorgastos.components
 
 import androidx.compose.foundation.Image
@@ -17,7 +22,7 @@ fun FondoPantalla(
     content: @Composable () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        // Imagen de fondo según tema
+        // imagen de fondo según el tema
         Image(
             painter = painterResource(
                 id = if (isDarkTheme) R.drawable.img else R.drawable.claro
@@ -27,7 +32,7 @@ fun FondoPantalla(
             contentScale = ContentScale.Crop
         )
 
-        // Capa semitransparente para legibilidad
+        // capa semitransparente para que se vea mejor el texto
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -37,7 +42,7 @@ fun FondoPantalla(
                 )
         )
 
-        // Contenido
+        // contenido que va dentro (la pantalla real)
         content()
     }
 }

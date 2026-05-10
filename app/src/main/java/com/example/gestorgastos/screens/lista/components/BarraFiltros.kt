@@ -1,4 +1,8 @@
-package com.example.gestorgastos.screens.lista
+// archivo: BarraFiltros.kt
+// que hace: barra de filtros para la lista de movimientos
+// permite: buscar por texto, filtrar por tipo (gastos/ingresos) o categoria
+
+package com.example.gestorgastos.screens.lista.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gestorgastos.screens.lista.Filtro
 
 @Composable
 fun BarraFiltros(
@@ -26,7 +31,7 @@ fun BarraFiltros(
     isDarkTheme: Boolean
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val primaryColor = if (isDarkTheme) Color(0xFF29B6F6) else Color(0xFFF57C00)
+    val primaryColor = MaterialTheme.colorScheme.primary
     val gastoColor = if (isDarkTheme) Color(0xFFFF6B6B) else Color(0xFFDC3545)
     val ingresoColor = if (isDarkTheme) Color(0xFF4ADE80) else Color(0xFF28A745)
 
@@ -61,17 +66,20 @@ fun BarraFiltros(
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
-                    modifier = Modifier.background(if (isDarkTheme) Color(0xFF1E1E2F) else Color.White)
+                    modifier = Modifier.background(
+                        if (isDarkTheme) MaterialTheme.colorScheme.surface
+                        else Color.White
+                    )
                 ) {
                     DropdownMenuItem(
                         text = {
                             Row {
-                                Icon(Icons.AutoMirrored.Filled.List, null, tint = if (isDarkTheme) Color.White else Color.Black)
+                                Icon(Icons.AutoMirrored.Filled.List, null, tint = MaterialTheme.colorScheme.onSurface)
                                 Spacer(Modifier.width(8.dp))
-                                Text("Todos", color = if (isDarkTheme) Color.White else Color.Black)
+                                Text("Todos", color = MaterialTheme.colorScheme.onSurface)
                             }
                         },
-                        onClick = { onFiltroChange(Filtro.TODOS); expanded = false }
+                        onClick = { onFiltroChange(Filtro.Todos); expanded = false }
                     )
 
                     HorizontalDivider()
@@ -84,7 +92,7 @@ fun BarraFiltros(
                                 Text("Solo Gastos", color = gastoColor)
                             }
                         },
-                        onClick = { onFiltroChange(Filtro.SOLO_GASTOS); expanded = false }
+                        onClick = { onFiltroChange(Filtro.SoloGastos); expanded = false }
                     )
 
                     categoriasGastos.forEach { categoria ->
@@ -93,10 +101,10 @@ fun BarraFiltros(
                                 Text(
                                     text = "  • $categoria",
                                     modifier = Modifier.padding(start = 16.dp),
-                                    color = if (isDarkTheme) Color.White else Color.Black
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             },
-                            onClick = { onFiltroChange(Filtro.CATEGORIA_GASTO(categoria)); expanded = false }
+                            onClick = { onFiltroChange(Filtro.CategoriaGasto(categoria)); expanded = false }
                         )
                     }
 
@@ -110,7 +118,7 @@ fun BarraFiltros(
                                 Text("Solo Ingresos", color = ingresoColor)
                             }
                         },
-                        onClick = { onFiltroChange(Filtro.SOLO_INGRESOS); expanded = false }
+                        onClick = { onFiltroChange(Filtro.SoloIngresos); expanded = false }
                     )
 
                     categoriasIngresos.forEach { categoria ->
@@ -119,17 +127,17 @@ fun BarraFiltros(
                                 Text(
                                     text = "  • $categoria",
                                     modifier = Modifier.padding(start = 16.dp),
-                                    color = if (isDarkTheme) Color.White else Color.Black
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             },
-                            onClick = { onFiltroChange(Filtro.CATEGORIA_INGRESO(categoria)); expanded = false }
+                            onClick = { onFiltroChange(Filtro.CategoriaIngreso(categoria)); expanded = false }
                         )
                     }
                 }
             }
         }
 
-        if (filtroSeleccionado != Filtro.TODOS) {
+        if (filtroSeleccionado != Filtro.Todos) {
             Row(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                 Text("Filtro: ", fontSize = 12.sp, color = Color.Gray)
                 Surface(
@@ -137,12 +145,12 @@ fun BarraFiltros(
                     color = primaryColor.copy(alpha = 0.2f)
                 ) {
                     Text(
-                        text = when (val current = filtroSeleccionado) {
-                            is Filtro.TODOS -> "Todos"
-                            is Filtro.SOLO_GASTOS -> "Solo Gastos"
-                            is Filtro.SOLO_INGRESOS -> "Solo Ingresos"
-                            is Filtro.CATEGORIA_GASTO -> current.nombre
-                            is Filtro.CATEGORIA_INGRESO -> current.nombre
+                        text = when (filtroSeleccionado) {
+                            is Filtro.Todos -> "Todos"
+                            is Filtro.SoloGastos -> "Solo Gastos"
+                            is Filtro.SoloIngresos -> "Solo Ingresos"
+                            is Filtro.CategoriaGasto -> filtroSeleccionado.nombre
+                            is Filtro.CategoriaIngreso -> filtroSeleccionado.nombre
                         },
                         fontSize = 11.sp,
                         color = primaryColor,

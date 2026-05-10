@@ -1,8 +1,13 @@
+// archivo: PdfViewModel.kt
+// que hace: maneja los datos para la pantalla PDF
+// proporciona: gastos, ingresos, categorias, moneda
+// funcion: generarPDF que llama a PdfGenerator
+
 package com.example.gestorgastos.screens.pdf
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gestorgastos.data.datastore.Preferencias
 import com.example.gestorgastos.data.entity.Categoria
 import com.example.gestorgastos.data.entity.Gasto
 import com.example.gestorgastos.data.entity.Ingreso
@@ -17,11 +22,21 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PdfViewModel @Inject constructor(
-    private val gastoRepository: GastoRepository,
-    private val ingresoRepository: IngresoRepository,
-    private val categoriaRepository: CategoriaRepository
+    @Suppress("unused") private val gastoRepository: GastoRepository,
+    @Suppress("unused") private val ingresoRepository: IngresoRepository,
+    @Suppress("unused") private val categoriaRepository: CategoriaRepository,
+    preferencias: Preferencias
 ) : ViewModel() {
 
+    // moneda actual desde DataStore
+    val monedaActual: StateFlow<String> = preferencias.moneda
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = "€"
+        )
+
+    // lista de gastos
     val gastos: StateFlow<List<Gasto>> = gastoRepository.obtenerTodos()
         .stateIn(
             scope = viewModelScope,
@@ -29,6 +44,7 @@ class PdfViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    // lista de ingresos
     val ingresos: StateFlow<List<Ingreso>> = ingresoRepository.obtenerTodos()
         .stateIn(
             scope = viewModelScope,
@@ -36,6 +52,7 @@ class PdfViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    // lista de categorias
     val categorias: StateFlow<List<Categoria>> = categoriaRepository.obtenerTodas()
         .stateIn(
             scope = viewModelScope,
@@ -43,13 +60,13 @@ class PdfViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    // genera el PDF con los datos actuales
     fun generarPDF(
-        context: Context,
         gastos: List<Gasto>,
         ingresos: List<Ingreso>,
-        categorias: List<Categoria>
+        mapaCategorias: Map<Int, Categoria>,
+        moneda: String
     ): File? {
-        val mapaCategorias = categorias.associateBy { it.id }
-        return PdfGenerator.generarInforme(context, gastos, ingresos, mapaCategorias)
+        return PdfGenerator.generarInforme(gastos, ingresos, mapaCategorias, moneda)
     }
 }
